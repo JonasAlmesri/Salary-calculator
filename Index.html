@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UK Salary Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-prefix {
+            position: relative;
+        }
+
+        .input-prefix::before {
+            content: '£';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 16px;
+        }
+
+        .input-prefix input {
+            padding-left: 30px;
+        }
+
+        .percentage-suffix {
+            position: relative;
+        }
+
+        .percentage-suffix::after {
+            content: '%';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 16px;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .result-value {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: -5px -10px;
+            padding: 15px 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .highlight .result-label,
+        .highlight .result-value {
+            color: white;
+            font-size: 18px;
+        }
+
+        .breakdown {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .breakdown-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>UK Salary Calculator</h1>
+        <p class="subtitle">Calculate your monthly take-home pay (2025/26 tax year)</p>
+
+        <form id="salaryForm">
+            <div class="input-group">
+                <label for="grossSalary">Annual Gross Salary</label>
+                <div class="input-prefix">
+                    <input type="number" id="grossSalary" placeholder="50000" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="pension">Pension Contribution (%)</label>
+                <div class="percentage-suffix">
+                    <input type="number" id="pension" placeholder="5" step="0.1" value="0">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="otherSacrifice">Other Salary Sacrifice (Annual)</label>
+                <div class="input-prefix">
+                    <input type="number" id="otherSacrifice" placeholder="0" value="0">
+                </div>
+            </div>
+
+            <button type="submit" class="calculate-btn">Calculate Take-Home Pay</button>
+        </form>
+
+        <div id="results" class="results">
+            <div class="result-item">
+                <span class="result-label">Annual Gross Salary</span>
+                <span class="result-value" id="displayGross">£0</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Pension Contribution</span>
+                <span class="result-value" id="displayPension">£0</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Other Salary Sacrifice</span>
+                <span class="result-value" id="displayOther">£0</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Taxable Salary</span>
+                <span class="result-value" id="displayTaxable">£0</span>
+            </div>
+
+            <div class="breakdown">
+                <div class="breakdown-title">Deductions</div>
+                <div class="result-item">
+                    <span class="result-label">Income Tax</span>
+                    <span class="result-value" id="displayTax">£0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">National Insurance</span>
+                    <span class="result-value" id="displayNI">£0</span>
+                </div>
+            </div>
+
+            <div class="highlight">
+                <div class="result-item">
+                    <span class="result-label">Annual Take-Home</span>
+                    <span class="result-value" id="displayAnnualNet">£0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Monthly Take-Home</span>
+                    <span class="result-value" id="displayMonthlyNet">£0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 2025/26 UK Tax Year rates
+        const TAX_FREE_ALLOWANCE = 12570;
+        const BASIC_RATE_LIMIT = 50270;
+        const HIGHER_RATE_LIMIT = 125140;
+        
+        const BASIC_TAX_RATE = 0.20;
+        const HIGHER_TAX_RATE = 0.40;
+        const ADDITIONAL_TAX_RATE = 0.45;
+        
+        const NI_THRESHOLD = 12570;
+        const NI_UPPER_LIMIT = 50270;
+        const NI_BASIC_RATE = 0.08;
+        const NI_HIGHER_RATE = 0.02;
+
+        function formatCurrency(amount) {
+            return '£' + amount.toLocaleString('en-GB', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            });
+        }
+
+        function calculateIncomeTax(taxableIncome) {
+            let tax = 0;
+            
+            if (taxableIncome <= TAX_FREE_ALLOWANCE) {
+                return 0;
+            }
+            
+            // Basic rate
+            if (taxableIncome > TAX_FREE_ALLOWANCE) {
+                const basicRateTaxable = Math.min(taxableIncome - TAX_FREE_ALLOWANCE, BASIC_RATE_LIMIT - TAX_FREE_ALLOWANCE);
+                tax += basicRateTaxable * BASIC_TAX_RATE;
+            }
+            
+            // Higher rate
+            if (taxableIncome > BASIC_RATE_LIMIT) {
+                const higherRateTaxable = Math.min(taxableIncome - BASIC_RATE_LIMIT, HIGHER_RATE_LIMIT - BASIC_RATE_LIMIT);
+                tax += higherRateTaxable * HIGHER_TAX_RATE;
+            }
+            
+            // Additional rate
+            if (taxableIncome > HIGHER_RATE_LIMIT) {
+                const additionalRateTaxable = taxableIncome - HIGHER_RATE_LIMIT;
+                tax += additionalRateTaxable * ADDITIONAL_TAX_RATE;
+            }
+            
+            return tax;
+        }
+
+        function calculateNationalInsurance(taxableIncome) {
+            let ni = 0;
+            
+            if (taxableIncome <= NI_THRESHOLD) {
+                return 0;
+            }
+            
+            // Basic rate NI
+            if (taxableIncome > NI_THRESHOLD) {
+                const basicRateNI = Math.min(taxableIncome - NI_THRESHOLD, NI_UPPER_LIMIT - NI_THRESHOLD);
+                ni += basicRateNI * NI_BASIC_RATE;
+            }
+            
+            // Higher rate NI
+            if (taxableIncome > NI_UPPER_LIMIT) {
+                const higherRateNI = taxableIncome - NI_UPPER_LIMIT;
+                ni += higherRateNI * NI_HIGHER_RATE;
+            }
+            
+            return ni;
+        }
+
+        document.getElementById('salaryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const grossSalary = parseFloat(document.getElementById('grossSalary').value) || 0;
+            const pensionPercent = parseFloat(document.getElementById('pension').value) || 0;
+            const otherSacrifice = parseFloat(document.getElementById('otherSacrifice').value) || 0;
+            
+            // Calculate salary sacrifice
+            const pensionContribution = grossSalary * (pensionPercent / 100);
+            const totalSacrifice = pensionContribution + otherSacrifice;
+            const taxableIncome = grossSalary - totalSacrifice;
+            
+            // Calculate deductions
+            const incomeTax = calculateIncomeTax(taxableIncome);
+            const nationalInsurance = calculateNationalInsurance(taxableIncome);
+            
+            // Calculate take-home
+            const annualTakeHome = taxableIncome - incomeTax - nationalInsurance;
+            const monthlyTakeHome = annualTakeHome / 12;
+            
+            // Display results
+            document.getElementById('displayGross').textContent = formatCurrency(grossSalary);
+            document.getElementById('displayPension').textContent = formatCurrency(pensionContribution);
+            document.getElementById('displayOther').textContent = formatCurrency(otherSacrifice);
+            document.getElementById('displayTaxable').textContent = formatCurrency(taxableIncome);
+            document.getElementById('displayTax').textContent = formatCurrency(incomeTax);
+            document.getElementById('displayNI').textContent = formatCurrency(nationalInsurance);
+            document.getElementById('displayAnnualNet').textContent = formatCurrency(annualTakeHome);
+            document.getElementById('displayMonthlyNet').textContent = formatCurrency(monthlyTakeHome);
+            
+            document.getElementById('results').classList.add('show');
+        });
+    </script>
+</body>
+</html>
